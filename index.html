@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NovaBot – HR Assistant</title>
+  <title>Chatty – HR Assistant</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -32,17 +32,31 @@
     .message {
       margin: 10px 0;
       padding: 10px;
-      border-radius: 8px;
+      border-radius: 20px;
       max-width: 80%;
+      font-size: 15px;
+      line-height: 1.4;
     }
     .bot {
-      background: #e0e7ff;
+      background: #e1ffc7;
       color: #333;
       text-align: left;
+      position: relative;
+    }
+    .bot::before {
+      content: "";
+      background-image: url('https://i.imgur.com/7k12EPD.png');
+      background-size: cover;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      position: absolute;
+      left: -40px;
+      top: 5px;
     }
     .user {
-      background: #0077cc;
-      color: white;
+      background: #dcf8c6;
+      color: #000;
       text-align: right;
       margin-left: auto;
     }
@@ -83,8 +97,10 @@
 
 <div id="welcome">
   <img src="https://i.imgur.com/7k12EPD.png" class="avatar" />
-  <h2>Welcome to NovaBot</h2>
-  <p>Your friendly HR assistant for engagement and retention</p>
+  <h2>Welcome to Chatty 🐾</h2>
+  <p>Your playful HR assistant for engagement and retention</p>
+  <img src="https://media.giphy.com/media/3o6Zt481isNVuQI1l6/giphy.gif" width="200" alt="Animated dog" />
+  <br><br>
   <button id="startBtn" onclick="startChat()">Let’s Chat</button>
 </div>
 
@@ -96,6 +112,59 @@
 <script>
   let currentStep = "askID";
   let employeeID = "";
+
+  const faqData = {
+    "Engagement Programs": "We offer team-building events, wellness challenges, and NovaStar recognition.",
+    "Feedback": "You can share feedback via VoiceBox or message HR directly.",
+    "Career Growth": "Apply for internal roles via the HR portal and join mentorship programs.",
+    "Wellness": "Join our wellness program by typing 'Join wellness' or emailing wellness@novabites.com.",
+    "NovaStar recognition": "NovaStar is our monthly peer-nominated award to celebrate outstanding contributions.",
+    "Team-building frequency": "Team-building events are held monthly across all branches.",
+    "Suggest activity": "You can suggest new activities via the HR portal or Chatty.",
+    "Culture committee": "Join by emailing culture@novabites.com or asking your manager.",
+    "Town hall purpose": "Monthly town halls share updates and celebrate wins.",
+    "Volunteer for events": "Sign up via the Events tab or reply 'Volunteer' to Chatty.",
+    "VoiceBox platform": "VoiceBox is our anonymous feedback tool accessible via the HR portal.",
+    "Feedback review": "HR reviews feedback weekly and shares summaries with leadership.",
+    "Escalate concerns": "You can escalate via Chatty or email hr@novabites.com.",
+    "Promotion process": "Submit an internal application and complete a performance review.",
+    "Mentorship program": "Open to all employees. Apply via the Learning tab.",
+    "Career coaching": "Request a session via Chatty or email coaching@novabites.com.",
+    "Switch departments": "Discuss with your manager and submit a transfer request.",
+    "Certifications": "We reimburse up to 75% for approved certifications.",
+    "Performance review": "Held twice a year with self-assessment and manager feedback.",
+    "Fitness challenge": "Monthly challenges with prizes. Join via Chatty or HR portal.",
+    "Mental health support": "Speak to our counselor every Wednesday. Book via Chatty.",
+    "Meditation app": "Free access to Calm app. Ask Chatty for your login code.",
+    "Wellness day": "You can take one paid wellness day per quarter.",
+    "Employee Assistance Program": "Includes counseling, legal advice, and financial planning.",
+    "Stay interview": "A friendly chat to understand your experience and improve retention.",
+    "Request stay interview": "Type 'Stay interview' or email hr@novabites.com.",
+    "Long-term benefits": "Extra leave, bonuses, and career grants after 2 years.",
+    "Exit interview": "Conducted before departure to gather feedback and insights.",
+    "Rejoin policy": "You can reapply after 6 months. Alumni get fast-track review.",
+    "Retention bonus": "Awarded annually to top performers with 2+ years tenure.",
+    "Top reasons to stay": "Growth, culture, recognition, and supportive leadership.",
+    "Work-life balance": "We offer flexible shifts, wellness days, and remote options.",
+    "Manager support": "Managers are trained in coaching and employee care.",
+    "Recognition types": "NovaStar, shout-outs, bonuses, and spotlight stories.",
+    "Feedback on policies": "Submit via Chatty or HR portal under 'Policy Feedback'.",
+    "Training programs": "Skill-based, leadership, and cross-functional training available.",
+    "Internal mobility": "Apply for open roles or request mentorship for transition.",
+    "Nutrition workshops": "Held quarterly. Sign up via Chatty or HR portal.",
+    "Wellness calendar": "Monthly schedule of fitness, mindfulness, and health events.",
+    "Anonymous feedback": "VoiceBox ensures your identity is protected.",
+    "Feedback results": "Shared in quarterly engagement reports.",
+    "Join employee clubs": "Ask Chatty or check the HR portal for current clubs.",
+    "Event rewards": "Earn points and prizes for participating in engagement events.",
+    "Policy feedback": "Submit anonymously via Chatty or HR portal.",
+    "HR contact": "Email hr@novabites.com or ask Chatty for help.",
+    "Career tracking": "Use the Career Dashboard in the HR portal.",
+    "Recognition nomination": "Submit via Chatty or the Recognition tab.",
+    "Wellness sessions": "Optional but highly recommended for all staff.",
+    "Exit interview confidentiality": "Your responses are confidential and used for improvement.",
+    "Retention tracking": "HR monitors trends and shares insights with leadership."
+  };
 
   function startChat() {
     document.getElementById("welcome").style.display = "none";
@@ -110,7 +179,7 @@
       if (employeeID) {
         showMessage(employeeID, "user");
         showMessage("Thanks! What would you like to explore today?", "bot");
-        showOptions(["Engagement Programs", "Feedback", "Career Growth", "Wellness"]);
+        showOptions(Object.keys(faqData).slice(0, 4)); // Initial 4 categories
         currentStep = "mainMenu";
       }
     }
@@ -121,55 +190,3 @@
     msg.className = `message ${sender}`;
     msg.innerText = text;
     document.getElementById("messages").appendChild(msg);
-    msg.scrollIntoView();
-  }
-
-  function showOptions(options) {
-    const area = document.getElementById("inputArea");
-    area.innerHTML = "";
-    const container = document.createElement("div");
-    container.className = "options";
-    options.forEach(opt => {
-      const btn = document.createElement("button");
-      btn.innerText = opt;
-      btn.onclick = () => handleOption(opt);
-      container.appendChild(btn);
-    });
-    area.appendChild(container);
-  }
-
-  function handleOption(choice) {
-    showMessage(choice, "user");
-    if (currentStep === "mainMenu") {
-      switch (choice) {
-        case "Engagement Programs":
-          showMessage("We offer team-building events, wellness challenges, and NovaStar recognition.", "bot");
-          break;
-        case "Feedback":
-          showMessage("You can share feedback via VoiceBox or message HR directly.", "bot");
-          break;
-        case "Career Growth":
-          showMessage("Apply for internal roles via the HR portal and join mentorship programs.", "bot");
-          break;
-        case "Wellness":
-          showMessage("Join our wellness program by typing 'Join wellness' or emailing wellness@novabites.com.", "bot");
-          break;
-      }
-      showMessage("Would you like to explore another topic?", "bot");
-      showOptions(["Yes", "No"]);
-      currentStep = "continueMenu";
-    } else if (currentStep === "continueMenu") {
-      if (choice === "Yes") {
-        showMessage("Great! What would you like to explore next?", "bot");
-        showOptions(["Engagement Programs", "Feedback", "Career Growth", "Wellness"]);
-        currentStep = "mainMenu";
-      } else {
-        showMessage("Thanks for chatting! Have a great day 😊", "bot");
-        document.getElementById("inputArea").innerHTML = "";
-      }
-    }
-  }
-</script>
-
-</body>
-</html>
