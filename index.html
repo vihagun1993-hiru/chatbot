@@ -3,119 +3,111 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NovaBot – HR Chatbot</title>
+  <title>NovaBot – HR Assistant</title>
   <style>
-    body { font-family: Arial; background: #f4f4f4; padding: 20px; }
-    #chatbox { background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    .bot, .user { margin: 10px 0; }
-    .bot { color: #333; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f9f9f9; margin: 0; padding: 0; }
+    #welcome { text-align: center; padding: 50px; }
+    #chatbox { display: none; max-width: 600px; margin: auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .avatar { width: 100px; border-radius: 50%; margin-bottom: 20px; }
+    .message { margin: 10px 0; }
+    .bot { text-align: left; color: #333; }
     .user { text-align: right; color: #0077cc; }
+    .options button { margin: 5px; padding: 10px 15px; border: none; background: #0077cc; color: white; border-radius: 5px; cursor: pointer; }
+    .options button:hover { background: #005fa3; }
     input[type="text"] { width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc; }
-    img.avatar { width: 40px; vertical-align: middle; margin-right: 10px; border-radius: 50%; }
   </style>
 </head>
 <body>
-  <div id="chatbox">
-    <div id="messages"></div>
-    <input type="text" id="userInput" placeholder="Type your reply..." />
-  </div>
 
-  <script>
-    const chatData = [
-      {
-        id: "Q1",
-        question: "Hi! What would you like to know about?",
-        answer: "I can help with Engagement Programs, Feedback, Career Growth, or Wellness.",
-        next: "Q2"
-      },
-      {
-        id: "Q2",
-        question: "Choose a topic: Engagement, Feedback, Career, Wellness",
-        answer: "Please type one of the options.",
-        branches: {
-          engagement: "Q3_Engagement",
-          feedback: "Q3_Feedback",
-          career: "Q3_Career",
-          wellness: "Q3_Wellness"
-        }
-      },
-      {
-        id: "Q3_Engagement",
-        question: "What engagement programs are available?",
-        answer: "We offer monthly team-building events, wellness challenges, and NovaStar peer recognition.",
-        next: "Q4"
-      },
-      {
-        id: "Q3_Feedback",
-        question: "How can I share feedback or suggestions?",
-        answer: "You can submit feedback anonymously via VoiceBox or message HR directly.",
-        next: "Q4"
-      },
-      {
-        id: "Q3_Career",
-        question: "What is the internal career growth process?",
-        answer: "You can apply for internal roles via the HR portal and join mentorship programs.",
-        next: "Q4"
-      },
-      {
-        id: "Q3_Wellness",
-        question: "How do I join the employee wellness program?",
-        answer: "Type “Join wellness” or email wellness@novabites.com. It’s open to all staff!",
-        next: "Q4"
-      },
-      {
-        id: "Q4",
-        question: "Would you like to ask another question?",
-        answer: "Type Yes to continue or No to exit.",
-        branches: {
-          yes: "Q2",
-          no: "END"
-        }
+<div id="welcome">
+  <img src="https://i.imgur.com/7k12EPD.png" class="avatar" />
+  <h2>Welcome to NovaBot</h2>
+  <p>Your friendly HR assistant for engagement and retention</p>
+  <button onclick="startChat()">Let’s Chat</button>
+</div>
+
+<div id="chatbox">
+  <div id="messages"></div>
+  <div id="inputArea"></div>
+</div>
+
+<script>
+  let currentStep = "askID";
+  let employeeID = "";
+
+  function startChat() {
+    document.getElementById("welcome").style.display = "none";
+    document.getElementById("chatbox").style.display = "block";
+    showMessage("Hi there! Before we begin, please enter your employee number:", "bot");
+    document.getElementById("inputArea").innerHTML = '<input type="text" id="empInput" placeholder="Enter employee number..." onkeydown="handleID(event)" />';
+  }
+
+  function handleID(e) {
+    if (e.key === "Enter") {
+      employeeID = e.target.value.trim();
+      if (employeeID) {
+        showMessage(employeeID, "user");
+        showMessage("Thanks! What would you like to explore today?", "bot");
+        showOptions(["Engagement Programs", "Feedback", "Career Growth", "Wellness"]);
+        currentStep = "mainMenu";
       }
-    ];
-
-    let currentId = "Q1";
-
-    function showMessage(text, sender = "bot") {
-      const msg = document.createElement("div");
-      msg.className = sender;
-      msg.innerHTML = sender === "bot"
-        ? `<img src="https://i.imgur.com/7k12EPD.png" class="avatar" /> ${text}`
-        : text;
-      document.getElementById("messages").appendChild(msg);
-      msg.scrollIntoView();
     }
+  }
 
-    function showNext(id) {
-      const node = chatData.find(q => q.id === id);
-      if (!node) return;
-      showMessage(node.question);
-      setTimeout(() => showMessage(node.answer), 500);
-      currentId = id;
-    }
+  function showMessage(text, sender = "bot") {
+    const msg = document.createElement("div");
+    msg.className = `message ${sender}`;
+    msg.innerText = text;
+    document.getElementById("messages").appendChild(msg);
+    msg.scrollIntoView();
+  }
 
-    document.getElementById("userInput").addEventListener("keydown", function(e) {
-      if (e.key === "Enter") {
-        const input = this.value.trim().toLowerCase();
-        if (!input) return;
-        showMessage(this.value, "user");
-        this.value = "";
-
-        const node = chatData.find(q => q.id === currentId);
-        if (node.branches) {
-          const next = node.branches[input];
-          if (next) {
-            setTimeout(() => showNext(next), 500);
-          } else {
-            showMessage("Sorry, I didn’t understand that. Please try again.");
-          }
-        } else if (node.next) {
-          setTimeout(() => showNext(node.next), 500);
-        }
-      }
+  function showOptions(options) {
+    const area = document.getElementById("inputArea");
+    area.innerHTML = "";
+    const container = document.createElement("div");
+    container.className = "options";
+    options.forEach(opt => {
+      const btn = document.createElement("button");
+      btn.innerText = opt;
+      btn.onclick = () => handleOption(opt);
+      container.appendChild(btn);
     });
+    area.appendChild(container);
+  }
 
-    showNext(currentId);
-  </script>
+  function handleOption(choice) {
+    showMessage(choice, "user");
+    if (currentStep === "mainMenu") {
+      switch (choice) {
+        case "Engagement Programs":
+          showMessage("We offer team-building events, wellness challenges, and NovaStar recognition.", "bot");
+          break;
+        case "Feedback":
+          showMessage("You can share feedback via VoiceBox or message HR directly.", "bot");
+          break;
+        case "Career Growth":
+          showMessage("Apply for internal roles via the HR portal and join mentorship programs.", "bot");
+          break;
+        case "Wellness":
+          showMessage("Join our wellness program by typing 'Join wellness' or emailing wellness@novabites.com.", "bot");
+          break;
+      }
+      showMessage("Would you like to explore another topic?", "bot");
+      showOptions(["Yes", "No"]);
+      currentStep = "continueMenu";
+    } else if (currentStep === "continueMenu") {
+      if (choice === "Yes") {
+        showMessage("Great! What would you like to explore next?", "bot");
+        showOptions(["Engagement Programs", "Feedback", "Career Growth", "Wellness"]);
+        currentStep = "mainMenu";
+      } else {
+        showMessage("Thanks for chatting! Have a great day 😊", "bot");
+        document.getElementById("inputArea").innerHTML = "";
+      }
+    }
+  }
+</script>
+
 </body>
 </html>
