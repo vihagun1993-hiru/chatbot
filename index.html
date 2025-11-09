@@ -159,4 +159,13 @@
   function handleManualIssue(e) {
     if (e.key === "Enter") {
       const issue = e.target.value.trim();
-      if
+      if (issue) {
+        showMessage(issue, "user");
+        context.issue = issue;
+        showMessage("Thanks for sharing. How often does this happen?", "bot");
+        showOptions(["Frequently", "Sometimes", "Rarely"]);
+        currentStep = "frequency";
+      }
+    }
+  }
+</script
