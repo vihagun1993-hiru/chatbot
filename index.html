@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NovaBot – HR Chatbot</title>
+  <style>
+    body { font-family: Arial; background: #f4f4f4; padding: 20px; }
+    #chatbox { background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .bot, .user { margin: 10px 0; }
+    .bot { color: #333; }
+    .user { text-align: right; color: #0077cc; }
+    input[type="text"] { width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc; }
+    img.avatar { width: 40px; vertical-align: middle; margin-right: 10px; border-radius: 50%; }
+  </style>
+</head>
+<body>
+  <div id="chatbox">
+    <div id="messages"></div>
+    <input type="text" id="userInput" placeholder="Type your reply..." />
+  </div>
+
+  <script>
+    const chatData = [
+      {
+        id: "Q1",
+        question: "Hi! What would you like to know about?",
+        answer: "I can help with Engagement Programs, Feedback, Career Growth, or Wellness.",
+        next: "Q2"
+      },
+      {
+        id: "Q2",
+        question: "Choose a topic: Engagement, Feedback, Career, Wellness",
+        answer: "Please type one of the options.",
+        branches: {
+          engagement: "Q3_Engagement",
+          feedback: "Q3_Feedback",
+          career: "Q3_Career",
+          wellness: "Q3_Wellness"
+        }
+      },
+      {
+        id: "Q3_Engagement",
+        question: "What engagement programs are available?",
+        answer: "We offer monthly team-building events, wellness challenges, and NovaStar peer recognition.",
+        next: "Q4"
+      },
+      {
+        id: "Q3_Feedback",
+        question: "How can I share feedback or suggestions?",
+        answer: "You can submit feedback anonymously via VoiceBox or message HR directly.",
+        next: "Q4"
+      },
+      {
+        id: "Q3_Career",
+        question: "What is the internal career growth process?",
+        answer: "You can apply for internal roles via the HR portal and join mentorship programs.",
+        next: "Q4"
+      },
+      {
+        id: "Q3_Wellness",
+        question: "How do I join the employee wellness program?",
+        answer: "Type “Join wellness” or email wellness@novabites.com. It’s open to all staff!",
+        next: "Q4"
+      },
+      {
+        id: "Q4",
+        question: "Would you like to ask another question?",
+        answer: "Type Yes to continue or No to exit.",
+        branches: {
+          yes: "Q2",
+          no: "END"
+        }
+      }
+    ];
+
+    let currentId = "Q1";
+
+    function showMessage(text, sender = "bot") {
+      const msg = document.createElement("div");
+      msg.className = sender;
+      msg.innerHTML = sender === "bot"
+        ? `<img src="https://i.imgur.com/7k12EPD.png" class="avatar" /> ${text}`
+        : text;
+      document.getElementById("messages").appendChild(msg);
+      msg.scrollIntoView();
+    }
+
+    function showNext(id) {
+      const node = chatData.find(q => q.id === id);
+      if (!node) return;
+      showMessage(node.question);
+      setTimeout(() => showMessage(node.answer), 500);
+      currentId = id;
+    }
+
+    document.getElementById("userInput").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        const input = this.value.trim().toLowerCase();
+        if (!input) return;
+        showMessage(this.value, "user");
+        this.value = "";
+
+        const node = chatData.find(q => q.id === currentId);
+        if (node.branches) {
+          const next = node.branches[input];
+          if (next) {
+            setTimeout(() => showNext(next), 500);
+          } else {
+            showMessage("Sorry, I didn’t understand that. Please try again.");
+          }
+        } else if (node.next) {
+          setTimeout(() => showNext(node.next), 500);
+        }
+      }
+    });
+
+    showNext(currentId);
+  </script>
+</body>
+</html>
