@@ -5,92 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chatty – HR Assistant</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f4f8;
-      margin: 0;
-      padding: 0;
-    }
-    #welcome {
-      text-align: center;
-      padding: 60px 20px;
-    }
-    #chatbox {
-      display: none;
-      max-width: 600px;
-      margin: auto;
-      padding: 20px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .avatar {
-      width: 120px;
-      border-radius: 50%;
-      margin-bottom: 20px;
-    }
-    .message {
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 20px;
-      max-width: 80%;
-      font-size: 15px;
-      line-height: 1.4;
-    }
-    .bot {
-      background: #e1ffc7;
-      color: #333;
-      text-align: left;
-      position: relative;
-    }
-    .bot::before {
-      content: "";
-      background-image: url('https://i.imgur.com/7k12EPD.png');
-      background-size: cover;
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      position: absolute;
-      left: -40px;
-      top: 5px;
-    }
-    .user {
-      background: #dcf8c6;
-      color: #000;
-      text-align: right;
-      margin-left: auto;
-    }
-    .options button {
-      margin: 5px;
-      padding: 10px 15px;
-      border: none;
-      background: #0077cc;
-      color: white;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .options button:hover {
-      background: #005fa3;
-    }
-    input[type="text"] {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    button#startBtn {
-      padding: 12px 25px;
-      font-size: 16px;
-      background: #0077cc;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button#startBtn:hover {
-      background: #005fa3;
-    }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; margin: 0; padding: 0; }
+    #welcome { text-align: center; padding: 60px 20px; }
+    #chatbox { display: none; max-width: 600px; margin: auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .avatar { width: 120px; border-radius: 50%; margin-bottom: 20px; }
+    .message { margin: 10px 0; padding: 10px; border-radius: 20px; max-width: 80%; font-size: 15px; line-height: 1.4; }
+    .bot { background: #e1ffc7; color: #333; text-align: left; position: relative; }
+    .bot::before { content: ""; background-image: url('https://i.imgur.com/7k12EPD.png'); background-size: cover; width: 30px; height: 30px; border-radius: 50%; position: absolute; left: -40px; top: 5px; }
+    .user { background: #dcf8c6; color: #000; text-align: right; margin-left: auto; }
+    .options button { margin: 5px; padding: 10px 15px; border: none; background: #0077cc; color: white; border-radius: 5px; cursor: pointer; }
+    .options button:hover { background: #005fa3; }
+    input[type="text"] { width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc; }
+    button#startBtn { padding: 12px 25px; font-size: 16px; background: #0077cc; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    button#startBtn:hover { background: #005fa3; }
   </style>
 </head>
 <body>
@@ -160,11 +87,7 @@
     if (currentStep === "chooseBranch") {
       branch = choice;
       showMessage(`Thanks! What area of ${branch.toLowerCase()} would you like help with?`, "bot");
-      if (branch === "Engagement") {
-        showOptions(["Recognition", "Feedback", "Wellness"]);
-      } else {
-        showOptions(["Career Growth", "Stay Interview", "Retention Bonus"]);
-      }
+      showOptions(branch === "Engagement" ? ["Recognition", "Feedback", "Wellness"] : ["Career Growth", "Stay Interview", "Retention Bonus"]);
       currentStep = "subTopic";
     }
 
@@ -177,9 +100,14 @@
 
     else if (currentStep === "issueType") {
       context.issue = choice;
-      showMessage("How often does this happen?", "bot");
-      showOptions(["Frequently", "Sometimes", "Rarely"]);
-      currentStep = "frequency";
+      if (choice === "Other") {
+        showMessage("Please describe your issue in a few words:", "bot");
+        document.getElementById("inputArea").innerHTML = '<input type="text" id="manualInput" placeholder="Type your issue..." onkeydown="handleManualIssue(event)" />';
+      } else {
+        showMessage("How often does this happen?", "bot");
+        showOptions(["Frequently", "Sometimes", "Rarely"]);
+        currentStep = "frequency";
+      }
     }
 
     else if (currentStep === "frequency") {
@@ -200,19 +128,35 @@
       context.action = choice;
       showMessage("Thanks for sharing. Here's what Chatty recommends:", "bot");
 
-      let solution = "";
-      if (branch === "Engagement") {
-        solution = "We'll notify HR to review your feedback and consider improvements to " + context.topic + ". You can also join the culture committee or use VoiceBox for anonymous input.";
-      } else {
-        solution = "HR will follow up regarding your concern about " + context.topic + ". You may also request a stay interview or explore career coaching.";
-      }
+      let solution = branch === "Engagement"
+        ? `We'll notify HR to review your feedback and consider improvements to ${context.topic}. You can also join the culture committee or use VoiceBox for anonymous input.`
+        : `HR will follow up regarding your concern about ${context.topic}. You may also request a stay interview or explore career coaching.`;
 
       showMessage(solution, "bot");
-      showMessage(`Thanks for chatting, ${employeeID}! Chatty hopes you feel heard and supported. Have a great day 😊`, "bot");
+      showMessage("Do you have any more questions?", "bot");
+      showOptions(["Yes", "No"]);
+      currentStep = "moreQuestions";
+    }
+
+    else if (currentStep === "moreQuestions") {
+      if (choice === "Yes") {
+        showMessage("Great! Would you like help with Engagement or Retention?", "bot");
+        showOptions(["Engagement", "Retention"]);
+        currentStep = "chooseBranch";
+      } else {
+        showMessage("Before you go, how would you rate this experience?", "bot");
+        showOptions(["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"]);
+        currentStep = "rating";
+      }
+    }
+
+    else if (currentStep === "rating") {
+      showMessage(`Thanks for your ${choice} rating, ${employeeID}! Chatty appreciates your feedback and hopes you feel heard and supported. Have a wonderful day 😊`, "bot");
       document.getElementById("inputArea").innerHTML = "";
     }
   }
-</script>
 
-</body>
-</html>
+  function handleManualIssue(e) {
+    if (e.key === "Enter") {
+      const issue = e.target.value.trim();
+      if
