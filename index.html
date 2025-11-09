@@ -98,7 +98,7 @@
 <div id="welcome">
   <img src="https://media.giphy.com/media/3o6ZtpxSZbQRRnwCKQ/giphy.gif" width="200" alt="Animated dog" />
   <h2>Welcome to Chatty 🐾</h2>
-  <p>Your playful HR assistant for engagement and retention</p>
+  <p>Hi there! Welcome to <strong>NovaBites Bakery Group</strong> — your friendly HR assistant is here to help you with employee engagement and retention. Whether you're looking to grow, feel heard, or stay supported, Chatty is ready to guide you!</p>
   <button id="startBtn" onclick="startChat()">Let’s Chat</button>
 </div>
 
@@ -110,18 +110,24 @@
 <script>
   let currentStep = "askID";
   let employeeID = "";
+  let selectedBranch = "";
 
-  const faqData = {
-    "Engagement Programs": "We offer team-building events, wellness challenges, and NovaStar recognition.",
-    "Feedback": "You can share feedback via VoiceBox or message HR directly.",
-    "Career Growth": "Apply for internal roles via the HR portal and join mentorship programs.",
-    "Wellness": "Join our wellness program by typing 'Join wellness' or emailing wellness@novabites.com.",
+  const engagementTopics = {
+    "Team Building": "We host monthly team-building events to strengthen collaboration.",
+    "Recognition": "NovaStar is our peer-nominated award for outstanding contributions.",
+    "Feedback Channels": "Use VoiceBox or Chatty to share feedback anytime.",
+    "Wellness Programs": "Join our wellness challenges and access mental health support.",
+    "Culture Committee": "Email culture@novabites.com to join and shape our workplace culture.",
+    "Employee Clubs": "Explore interest-based clubs via the HR portal or ask Chatty."
+  };
+
+  const retentionTopics = {
     "Stay Interview": "A friendly chat to understand your experience and improve retention.",
     "Exit Interview": "Conducted before departure to gather feedback and insights.",
-    "Recognition": "NovaStar, shout-outs, bonuses, and spotlight stories.",
-    "Mental Health": "Speak to our counselor every Wednesday. Book via Chatty.",
-    "Training Programs": "Skill-based, leadership, and cross-functional training available.",
-    "Retention Bonus": "Awarded annually to top performers with 2+ years tenure."
+    "Retention Bonus": "Awarded annually to top performers with 2+ years tenure.",
+    "Career Growth": "Apply for internal roles and join mentorship programs.",
+    "Long-Term Benefits": "Extra leave, bonuses, and career grants after 2 years.",
+    "Rejoin Policy": "You can reapply after 6 months. Alumni get fast-track review."
   };
 
   function startChat() {
@@ -136,9 +142,9 @@
       employeeID = e.target.value.trim();
       if (employeeID) {
         showMessage(employeeID, "user");
-        showMessage("Thanks! What would you like to explore today?", "bot");
-        showOptions(Object.keys(faqData));
-        currentStep = "mainMenu";
+        showMessage("Thanks! Would you like help with Engagement or Retention?", "bot");
+        showOptions(["Engagement", "Retention"]);
+        currentStep = "chooseBranch";
       }
     }
   }
@@ -167,19 +173,44 @@
 
   function handleOption(choice) {
     showMessage(choice, "user");
-    if (faqData[choice]) {
-      showMessage(faqData[choice], "bot");
-      showMessage("Would you like to explore another topic?", "bot");
-      showOptions(["Yes", "No"]);
-      currentStep = "continueMenu";
+
+    if (currentStep === "chooseBranch") {
+      selectedBranch = choice;
+      const topics = choice === "Engagement" ? Object.keys(engagementTopics) : Object.keys(retentionTopics);
+      showMessage(`Great! Here are some ${choice.toLowerCase()} topics you can explore:`, "bot");
+      showOptions([...topics, "Other Question"]);
+      currentStep = "topicMenu";
+    } else if (currentStep === "topicMenu") {
+      if (choice === "Other Question") {
+        showMessage("Please type your question below:", "bot");
+        document.getElementById("inputArea").innerHTML = '<input type="text" id="manualInput" placeholder="Type your question..." onkeydown="handleManual(event)" />';
+      } else {
+        const answer = selectedBranch === "Engagement" ? engagementTopics[choice] : retentionTopics[choice];
+        showMessage(answer, "bot");
+        showMessage("Would you like to explore another topic?", "bot");
+        showOptions(["Yes", "No"]);
+        currentStep = "continueMenu";
+      }
     } else if (currentStep === "continueMenu") {
       if (choice === "Yes") {
-        showMessage("Great! What would you like to explore next?", "bot");
-        showOptions(Object.keys(faqData));
-        currentStep = "mainMenu";
+        const topics = selectedBranch === "Engagement" ? Object.keys(engagementTopics) : Object.keys(retentionTopics);
+        showOptions([...topics, "Other Question"]);
+        currentStep = "topicMenu";
       } else {
-        showMessage("Thanks for chatting! Have a great day 😊", "bot");
+        showMessage(`Thanks for chatting, ${employeeID}! Chatty hopes you feel more informed and supported. Have a great day! 😊`, "bot");
         document.getElementById("inputArea").innerHTML = "";
+      }
+    }
+  }
+
+  function handleManual(e) {
+    if (e.key === "Enter") {
+      const question = e.target.value.trim();
+      if (question) {
+        showMessage(question, "user");
+        showMessage("Thanks! HR will review your question and get back to you soon. Meanwhile, feel free to explore other topics.", "bot");
+        showOptions(["Yes", "No"]);
+        currentStep = "continueMenu";
       }
     }
   }
