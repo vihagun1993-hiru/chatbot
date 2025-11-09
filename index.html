@@ -5,16 +5,78 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>NovaBot – HR Assistant</title>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #f9f9f9; margin: 0; padding: 0; }
-    #welcome { text-align: center; padding: 50px; }
-    #chatbox { display: none; max-width: 600px; margin: auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    .avatar { width: 100px; border-radius: 50%; margin-bottom: 20px; }
-    .message { margin: 10px 0; }
-    .bot { text-align: left; color: #333; }
-    .user { text-align: right; color: #0077cc; }
-    .options button { margin: 5px; padding: 10px 15px; border: none; background: #0077cc; color: white; border-radius: 5px; cursor: pointer; }
-    .options button:hover { background: #005fa3; }
-    input[type="text"] { width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 0;
+    }
+    #welcome {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    #chatbox {
+      display: none;
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .avatar {
+      width: 120px;
+      border-radius: 50%;
+      margin-bottom: 20px;
+    }
+    .message {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      max-width: 80%;
+    }
+    .bot {
+      background: #e0e7ff;
+      color: #333;
+      text-align: left;
+    }
+    .user {
+      background: #0077cc;
+      color: white;
+      text-align: right;
+      margin-left: auto;
+    }
+    .options button {
+      margin: 5px;
+      padding: 10px 15px;
+      border: none;
+      background: #0077cc;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .options button:hover {
+      background: #005fa3;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button#startBtn {
+      padding: 12px 25px;
+      font-size: 16px;
+      background: #0077cc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button#startBtn:hover {
+      background: #005fa3;
+    }
   </style>
 </head>
 <body>
@@ -23,7 +85,7 @@
   <img src="https://i.imgur.com/7k12EPD.png" class="avatar" />
   <h2>Welcome to NovaBot</h2>
   <p>Your friendly HR assistant for engagement and retention</p>
-  <button onclick="startChat()">Let’s Chat</button>
+  <button id="startBtn" onclick="startChat()">Let’s Chat</button>
 </div>
 
 <div id="chatbox">
