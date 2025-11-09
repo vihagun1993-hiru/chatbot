@@ -98,7 +98,7 @@
 <div id="welcome">
   <img src="https://media.giphy.com/media/3o6ZtpxSZbQRRnwCKQ/giphy.gif" width="200" alt="Animated dog" />
   <h2>Welcome to Chatty 🐾</h2>
-  <p>Hi there! Welcome to <strong>NovaBites Bakery Group</strong> — your friendly HR assistant is here to help you with employee engagement and retention. Whether you're looking to grow, feel heard, or stay supported, Chatty is ready to guide you!</p>
+  <p>Hi there! Welcome to <strong>NovaBites Bakery Group</strong> — your friendly HR assistant is here to help you with employee engagement and retention. Whether you're looking to grow, feel heard, or stay supported, Chatty is ready to guide you step-by-step.</p>
   <button id="startBtn" onclick="startChat()">Let’s Chat</button>
 </div>
 
@@ -110,25 +110,8 @@
 <script>
   let currentStep = "askID";
   let employeeID = "";
-  let selectedBranch = "";
-
-  const engagementTopics = {
-    "Team Building": "We host monthly team-building events to strengthen collaboration.",
-    "Recognition": "NovaStar is our peer-nominated award for outstanding contributions.",
-    "Feedback Channels": "Use VoiceBox or Chatty to share feedback anytime.",
-    "Wellness Programs": "Join our wellness challenges and access mental health support.",
-    "Culture Committee": "Email culture@novabites.com to join and shape our workplace culture.",
-    "Employee Clubs": "Explore interest-based clubs via the HR portal or ask Chatty."
-  };
-
-  const retentionTopics = {
-    "Stay Interview": "A friendly chat to understand your experience and improve retention.",
-    "Exit Interview": "Conducted before departure to gather feedback and insights.",
-    "Retention Bonus": "Awarded annually to top performers with 2+ years tenure.",
-    "Career Growth": "Apply for internal roles and join mentorship programs.",
-    "Long-Term Benefits": "Extra leave, bonuses, and career grants after 2 years.",
-    "Rejoin Policy": "You can reapply after 6 months. Alumni get fast-track review."
-  };
+  let branch = "";
+  let context = {};
 
   function startChat() {
     document.getElementById("welcome").style.display = "none";
@@ -175,43 +158,58 @@
     showMessage(choice, "user");
 
     if (currentStep === "chooseBranch") {
-      selectedBranch = choice;
-      const topics = choice === "Engagement" ? Object.keys(engagementTopics) : Object.keys(retentionTopics);
-      showMessage(`Great! Here are some ${choice.toLowerCase()} topics you can explore:`, "bot");
-      showOptions([...topics, "Other Question"]);
-      currentStep = "topicMenu";
-    } else if (currentStep === "topicMenu") {
-      if (choice === "Other Question") {
-        showMessage("Please type your question below:", "bot");
-        document.getElementById("inputArea").innerHTML = '<input type="text" id="manualInput" placeholder="Type your question..." onkeydown="handleManual(event)" />';
+      branch = choice;
+      showMessage(`Thanks! What area of ${branch.toLowerCase()} would you like help with?`, "bot");
+      if (branch === "Engagement") {
+        showOptions(["Recognition", "Feedback", "Wellness"]);
       } else {
-        const answer = selectedBranch === "Engagement" ? engagementTopics[choice] : retentionTopics[choice];
-        showMessage(answer, "bot");
-        showMessage("Would you like to explore another topic?", "bot");
-        showOptions(["Yes", "No"]);
-        currentStep = "continueMenu";
+        showOptions(["Career Growth", "Stay Interview", "Retention Bonus"]);
       }
-    } else if (currentStep === "continueMenu") {
-      if (choice === "Yes") {
-        const topics = selectedBranch === "Engagement" ? Object.keys(engagementTopics) : Object.keys(retentionTopics);
-        showOptions([...topics, "Other Question"]);
-        currentStep = "topicMenu";
-      } else {
-        showMessage(`Thanks for chatting, ${employeeID}! Chatty hopes you feel more informed and supported. Have a great day! 😊`, "bot");
-        document.getElementById("inputArea").innerHTML = "";
-      }
+      currentStep = "subTopic";
     }
-  }
 
-  function handleManual(e) {
-    if (e.key === "Enter") {
-      const question = e.target.value.trim();
-      if (question) {
-        showMessage(question, "user");
-        showMessage("Thanks! HR will review your question and get back to you soon. Meanwhile, feel free to explore other topics.", "bot");
-        showOptions(["Yes", "No"]);
-        currentStep = "continueMenu";
+    else if (currentStep === "subTopic") {
+      context.topic = choice;
+      showMessage(`Got it. What issue are you facing with ${choice}?`, "bot");
+      showOptions(["Not available", "Not effective", "Not recognized", "Other"]);
+      currentStep = "issueType";
+    }
+
+    else if (currentStep === "issueType") {
+      context.issue = choice;
+      showMessage("How often does this happen?", "bot");
+      showOptions(["Frequently", "Sometimes", "Rarely"]);
+      currentStep = "frequency";
+    }
+
+    else if (currentStep === "frequency") {
+      context.frequency = choice;
+      showMessage("Have you shared this with anyone before?", "bot");
+      showOptions(["Yes", "No"]);
+      currentStep = "sharedBefore";
+    }
+
+    else if (currentStep === "sharedBefore") {
+      context.shared = choice;
+      showMessage("Would you like to request support or suggest an improvement?", "bot");
+      showOptions(["Request Support", "Suggest Improvement"]);
+      currentStep = "action";
+    }
+
+    else if (currentStep === "action") {
+      context.action = choice;
+      showMessage("Thanks for sharing. Here's what Chatty recommends:", "bot");
+
+      let solution = "";
+      if (branch === "Engagement") {
+        solution = "We'll notify HR to review your feedback and consider improvements to " + context.topic + ". You can also join the culture committee or use VoiceBox for anonymous input.";
+      } else {
+        solution = "HR will follow up regarding your concern about " + context.topic + ". You may also request a stay interview or explore career coaching.";
       }
+
+      showMessage(solution, "bot");
+      showMessage(`Thanks for chatting, ${employeeID}! Chatty hopes you feel heard and supported. Have a great day 😊`, "bot");
+      document.getElementById("inputArea").innerHTML = "";
     }
   }
 </script>
