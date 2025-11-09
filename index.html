@@ -161,4 +161,14 @@
       const issue = e.target.value.trim();
       if (issue) {
         showMessage(issue, "user");
-        context.issue
+        context.issue = issue;
+        showMessage("How often does this happen?", "bot");
+        showOptions(["Frequently", "Sometimes", "Rarely"]);
+        currentStep = "frequency";
+      }
+    }
+  }
+</script>
+
+</body>
+</html>
