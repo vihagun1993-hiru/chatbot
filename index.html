@@ -27,7 +27,6 @@
     input[type="text"] { width: 100%; padding: 10px; margin-top: 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 15px; }
     button#startBtn { padding: 12px 22px; font-size: 16px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; }
     button#startBtn:hover { background: var(--primary-dark); }
-
     .assistant-wrap { display: inline-block; position: relative; }
     lottie-player { width: 220px; height: 220px; }
     .assistant-bubble {
@@ -36,7 +35,6 @@
       border-radius: 12px; padding: 8px 10px; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       white-space: nowrap;
     }
-
     .rating { display: flex; gap: 6px; margin-top: 10px; }
     .rating button { font-size: 18px; padding: 8px 10px; background: #ffd166; color: #333; border-radius: 6px; border: none; cursor: pointer; }
     .rating button:hover { background: #f4a261; color: #fff; }
@@ -46,23 +44,11 @@
 
 <div id="welcome">
   <div class="assistant-wrap">
-    <lottie-player
-      src="Chat Bot Test.json"
-      background="transparent"
-      speed="1"
-      loop
-      autoplay>
-    </lottie-player>
+    <lottie-player src="Chat Bot Test.json" background="transparent" speed="1" loop autoplay></lottie-player>
     <div class="assistant-bubble">Do you have any questions? Then let’s talk!</div>
   </div>
-
   <h2>Welcome to Chatty 💻</h2>
-  <p>
-    Hi there! Welcome to <strong>NovaTech Solutions Pvt. Ltd.</strong> — a fast-growing IT service provider in Colombo.
-    Founded in 2015, NovaTech specializes in software development, cloud solutions, and AI-driven business applications.
-    Our diverse team of engineers, analysts, designers, and HR professionals builds world-class solutions for enterprises in Sri Lanka, Singapore, and the UAE.
-    With 320 employees, HR manages recruitment, onboarding, performance, and training. As we scale, we’re integrating AI-powered HR tools to boost efficiency, support employees, and guide strategic decisions, building a more agile, future-ready HR environment for long-term growth.
-  </p>
+  <p>Hi there! Welcome to <strong>NovaTech Solutions Pvt. Ltd.</strong> — a fast-growing IT service provider in Colombo.</p>
   <button id="startBtn" onclick="startChat()">Let’s Chat</button>
 </div>
 
@@ -72,41 +58,23 @@
 </div>
 
 <script>
-// ✅ Full chatbot logic
-let currentStep = "greeting";
+let currentStep = "askName";
 let ratingGiven = false;
-const context = {
-  topic: null,
-  engagement: {},
-  feedback: {},
-  recognition: {},
-  career: {},
-  retention: {},
-  inquiry: "",
-  rating: null
-};
+const context = { name:"", id:"", topic:null, engagement:{}, feedback:{}, recognition:{}, career:{}, retention:{}, inquiry:"", rating:null };
 
 function startChat() {
   document.getElementById("welcome").style.display = "none";
   document.getElementById("chatbox").style.display = "block";
-  showMessage("Hi! I am your HR Engagement Assistant. What would you like help with today?", "bot");
-  showOptions([
-    "Employee engagement activities",
-    "Employee feedback",
-    "Rewards & recognition",
-    "Career development",
-    "Retention concerns",
-    "Other HR inquiries"
-  ]);
-  currentStep = "greeting";
+  showMessage("Welcome! Please enter your full name:", "bot");
+  showInput("Your name...", "handleName");
 }
 
-function showMessage(text, sender = "bot") {
+function showMessage(text, sender="bot") {
   const msg = document.createElement("div");
   msg.className = `message ${sender}`;
   msg.innerText = text;
   document.getElementById("messages").appendChild(msg);
-  msg.scrollIntoView({ behavior: "smooth", block: "end" });
+  msg.scrollIntoView({behavior:"smooth",block:"end"});
 }
 
 function showOptions(options) {
@@ -114,70 +82,93 @@ function showOptions(options) {
   area.innerHTML = "";
   const container = document.createElement("div");
   container.className = "options";
-  options.forEach(opt => {
-    const btn = document.createElement("button");
-    btn.innerText = opt;
-    btn.onclick = () => handleOption(opt);
+  options.forEach(opt=>{
+    const btn=document.createElement("button");
+    btn.innerText=opt;
+    btn.onclick=()=>handleOption(opt);
     container.appendChild(btn);
   });
   area.appendChild(container);
 }
 
 function showInput(placeholder, handlerName) {
-  const area = document.getElementById("inputArea");
-  area.innerHTML = `<input type="text" placeholder="${placeholder}" onkeydown="${handlerName}(event)" />`;
+  const area=document.getElementById("inputArea");
+  area.innerHTML=`<input type="text" placeholder="${placeholder}" onkeydown="${handlerName}(event)" />`;
 }
 
-function handleManual(event) {
-  if (event.key === "Enter") {
-    const val = event.target.value.trim();
-    if (!val) return;
-    showMessage(val, "user");
-
-    if (currentStep === "otherInquiryManual") {
-      context.inquiry = val;
-      showMessage("Thanks! Would you like HR to follow up with you?", "bot");
-      showOptions(["Yes", "No"]);
-      currentStep = "otherInquiryFollowup";
-    }
-
-    if (currentStep === "feedbackAnonymous" || currentStep === "feedbackNamed") {
-      context.feedback.text = val;
-      showMessage("Received. Your feedback will be shared with the HR engagement team.", "bot");
-      exitFlow();
-    }
-
-    if (currentStep === "recognitionNominationName") {
-      context.recognition.nominee = val;
-      showMessage("Please add a short reason for the nomination:", "bot");
-      showInput("Reason for nomination...", "handleManualReason");
-      currentStep = "recognitionNominationReason";
-    }
-
-    if (currentStep === "careerFreeTextGoals") {
-      context.career.freeText = val;
-      showMessage("Thanks! Would you be interested in exploring training programs related to your chosen field?", "bot");
-      showOptions(["Yes", "No"]);
-      currentStep = "careerQ3";
-    }
+function handleName(event){
+  if(event.key==="Enter"){
+    const val=event.target.value.trim();
+    if(!val)return;
+    context.name=val;
+    showMessage(val,"user");
+    showMessage("Thanks, "+val+". Please enter your Employee ID:","bot");
+    showInput("Employee ID...","handleID");
+  }
+}
+function handleID(event){
+  if(event.key==="Enter"){
+    const val=event.target.value.trim();
+    if(!val)return;
+    context.id=val;
+    showMessage(val,"user");
+    showMessage("Hi "+context.name+"! I am your HR Engagement Assistant. What would you like help with today?","bot");
+    showOptions(["Employee engagement activities","Employee feedback","Rewards & recognition","Career development","Retention concerns","Other HR inquiries","Leave policy","Training requests","Grievance reporting"]);
+    currentStep="greeting";
   }
 }
 
-function handleManualReason(event) {
-  if (event.key === "Enter") {
-    const val = event.target.value.trim();
-    if (!val) return;
-    showMessage(val, "user");
-    context.recognition.reason = val;
-    showMessage("Nomination submitted. HR will review it shortly.", "bot");
+function handleManual(event){
+  if(event.key==="Enter"){
+    const val=event.target.value.trim();
+    if(!val)return;
+    showMessage(val,"user");
+    if(currentStep==="otherInquiryManual"){
+      context.inquiry=val;
+      showMessage("Thanks! Would you like HR to follow up with you?","bot");
+      showOptions(["Yes","No"]);
+      currentStep="otherInquiryFollowup";
+    }
+    if(currentStep==="feedbackAnonymous"||currentStep==="feedbackNamed"){
+      context.feedback.text=val;
+      showMessage("Received. Your feedback will be shared with HR.","bot");
+      exitFlow();
+    }
+    if(currentStep==="recognitionNominationName"){
+      context.recognition.nominee=val;
+      showMessage("Please add a short reason for the nomination:","bot");
+      showInput("Reason...","handleManualReason");
+      currentStep="recognitionNominationReason";
+    }
+  }
+}
+function handleManualReason(event){
+  if(event.key==="Enter"){
+    const val=event.target.value.trim();
+    if(!val)return;
+    showMessage(val,"user");
+    context.recognition.reason=val;
+    showMessage("Nomination submitted.","bot");
     exitFlow();
   }
 }
 
-function showRating() {
-  if (ratingGiven) return;
-  const area = document.getElementById("inputArea");
-  area.innerHTML = "";
-  const ratingDiv = document.createElement("div");
-  ratingDiv.className = "rating";
-  const stars = ["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐",
+function handleOption(choice){
+  showMessage(choice,"user");
+  if(currentStep==="greeting"){
+    context.topic=choice;
+    switch(choice){
+      case "Employee engagement activities":
+        showMessage("Are you aware of the employee engagement programs we currently offer?","bot");
+        showOptions(["Yes","No"]);
+        currentStep="engagementQ1"; break;
+      case "Employee feedback":
+        showMessage("Do you want to provide feedback as anonymous?","bot");
+        showOptions(["Yes","No"]);
+        currentStep="feedbackQ1"; break;
+      case "Rewards & recognition":
+        showMessage("Do you feel your contributions are recognized at work?","bot");
+        showOptions(["Yes","No"]);
+        currentStep="recognitionQ1"; break;
+      case "Career development":
+        showMessage
