@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chatty – HR Engagement Assistant</title>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <style>
     :root {
       --bg: #f0f4f8;
@@ -18,7 +19,7 @@
     #welcome { text-align: center; padding: 50px 20px; }
     #chatbox { display: none; max-width: 800px; margin: 20px auto; padding: 20px; background: var(--card); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
     .message { margin: 12px 0; padding: 12px 14px; border-radius: 18px; max-width: 80%; font-size: 15px; line-height: 1.5; }
-    .bot { background: var(--bot); color: var(--text); text-align: left; position: relative; }
+    .bot { background: var(--bot); color: var(--text); text-align: left; }
     .user { background: var(--user); color: #000; text-align: right; margin-left: auto; }
     .options { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
     .options button { padding: 10px 14px; border: none; background: var(--primary); color: white; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
@@ -27,18 +28,15 @@
     button#startBtn { padding: 12px 22px; font-size: 16px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; }
     button#startBtn:hover { background: var(--primary-dark); }
 
-    /* XP-style animated assistant panel */
     .assistant-wrap { display: inline-block; position: relative; }
-    .assistant-gif { width: 220px; height: auto; border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+    lottie-player { width: 220px; height: 220px; }
     .assistant-bubble {
       position: absolute; left: 50%; transform: translateX(-50%);
-      bottom: -16px; background: #fff; color: #333; border: 1px solid #e5e7eb;
+      bottom: -16px; background: #fff; color: #333; border: 1px solid #ccc;
       border-radius: 12px; padding: 8px 10px; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       white-space: nowrap;
     }
-    .brand { font-weight: 600; }
 
-    /* Rating styles */
     .rating { display: flex; gap: 6px; margin-top: 10px; }
     .rating button { font-size: 18px; padding: 8px 10px; background: #ffd166; color: #333; border-radius: 6px; border: none; cursor: pointer; }
     .rating button:hover { background: #f4a261; color: #fff; }
@@ -47,20 +45,20 @@
 <body>
 
 <div id="welcome">
-  <!-- XP-style animated assistant: replace the src with your preferred cartoon GIF (magician/desk assistant/XP-style) -->
   <div class="assistant-wrap">
-    <img
-      class="assistant-gif"
-      src="https://media.tenor.com/3v2kLk9YQnIAAAAi/wizard-magic.gif"
-      alt="Animated cartoon assistant asking 'Do you have any questions? Then let’s talk?'"
-      onerror="this.src='https://media.giphy.com/media/eKDrNwGq9W1E8/giphy.gif';"
-    />
+    <lottie-player
+      src="Chat Bot Test.json"
+      background="transparent"
+      speed="1"
+      loop
+      autoplay>
+    </lottie-player>
     <div class="assistant-bubble">Do you have any questions? Then let’s talk!</div>
   </div>
 
   <h2>Welcome to Chatty 💻</h2>
   <p>
-    Hi there! Welcome to <span class="brand">NovaTech Solutions Pvt. Ltd.</span> — a fast-growing IT service provider in Colombo.
+    Hi there! Welcome to <strong>NovaTech Solutions Pvt. Ltd.</strong> — a fast-growing IT service provider in Colombo.
     Founded in 2015, NovaTech specializes in software development, cloud solutions, and AI-driven business applications.
     Our diverse team of engineers, analysts, designers, and HR professionals builds world-class solutions for enterprises in Sri Lanka, Singapore, and the UAE.
     With 320 employees, HR manages recruitment, onboarding, performance, and training. As we scale, we’re integrating AI-powered HR tools to boost efficiency, support employees, and guide strategic decisions, building a more agile, future-ready HR environment for long-term growth.
@@ -74,422 +72,112 @@
 </div>
 
 <script>
-  // Conversation state
-  let currentStep = "greeting";
-  const context = {
-    topic: null,
-    engagement: {},
-    feedback: {},
-    recognition: {},
-    career: {},
-    retention: {},
-    inquiry: "",
-    rating: null
-  };
+// ✅ Full chatbot logic
+let currentStep = "greeting";
+let ratingGiven = false;
+const context = {
+  topic: null,
+  engagement: {},
+  feedback: {},
+  recognition: {},
+  career: {},
+  retention: {},
+  inquiry: "",
+  rating: null
+};
 
-  // UI helpers
-  function startChat() {
-    document.getElementById("welcome").style.display = "none";
-    document.getElementById("chatbox").style.display = "block";
-    showMessage("Hi! I am your HR Engagement Assistant. What would you like help with today?", "bot");
-    showOptions([
-      "Employee engagement activities",
-      "Employee feedback",
-      "Rewards & recognition",
-      "Career development",
-      "Retention concerns",
-      "Other HR inquiries"
-    ]);
-    currentStep = "greeting";
-  }
+function startChat() {
+  document.getElementById("welcome").style.display = "none";
+  document.getElementById("chatbox").style.display = "block";
+  showMessage("Hi! I am your HR Engagement Assistant. What would you like help with today?", "bot");
+  showOptions([
+    "Employee engagement activities",
+    "Employee feedback",
+    "Rewards & recognition",
+    "Career development",
+    "Retention concerns",
+    "Other HR inquiries"
+  ]);
+  currentStep = "greeting";
+}
 
-  function showMessage(text, sender = "bot") {
-    const msg = document.createElement("div");
-    msg.className = `message ${sender}`;
-    msg.innerText = text;
-    document.getElementById("messages").appendChild(msg);
-    msg.scrollIntoView({ behavior: "smooth", block: "end" });
-  }
+function showMessage(text, sender = "bot") {
+  const msg = document.createElement("div");
+  msg.className = `message ${sender}`;
+  msg.innerText = text;
+  document.getElementById("messages").appendChild(msg);
+  msg.scrollIntoView({ behavior: "smooth", block: "end" });
+}
 
-  function showOptions(options) {
-    const area = document.getElementById("inputArea");
-    area.innerHTML = "";
-    const container = document.createElement("div");
-    container.className = "options";
-    options.forEach(opt => {
-      const btn = document.createElement("button");
-      btn.innerText = opt;
-      btn.onclick = () => handleOption(opt);
-      container.appendChild(btn);
-    });
-    area.appendChild(container);
-  }
+function showOptions(options) {
+  const area = document.getElementById("inputArea");
+  area.innerHTML = "";
+  const container = document.createElement("div");
+  container.className = "options";
+  options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.innerText = opt;
+    btn.onclick = () => handleOption(opt);
+    container.appendChild(btn);
+  });
+  area.appendChild(container);
+}
 
-  function showInput(placeholder, handlerName) {
-    const area = document.getElementById("inputArea");
-    area.innerHTML = `<input type="text" placeholder="${placeholder}" onkeydown="${handlerName}(event)" />`;
-  }
+function showInput(placeholder, handlerName) {
+  const area = document.getElementById("inputArea");
+  area.innerHTML = `<input type="text" placeholder="${placeholder}" onkeydown="${handlerName}(event)" />`;
+}
 
-  // Manual handlers for free text
-  function handleManual(event) {
-    if (event.key === "Enter") {
-      const val = event.target.value.trim();
-      if (!val) return;
-      showMessage(val, "user");
+function handleManual(event) {
+  if (event.key === "Enter") {
+    const val = event.target.value.trim();
+    if (!val) return;
+    showMessage(val, "user");
 
-      if (currentStep === "otherInquiryManual") {
-        context.inquiry = val;
-        showMessage("Thanks! Would you like HR to follow up with you?", "bot");
-        showOptions(["Yes", "No"]);
-        currentStep = "otherInquiryFollowup";
-      }
-
-      if (currentStep === "feedbackAnonymous" || currentStep === "feedbackNamed") {
-        context.feedback.text = val;
-        showMessage("Received. Your feedback will be shared with the HR engagement team.", "bot");
-        exitFlow();
-      }
-
-      if (currentStep === "recognitionNominationName") {
-        context.recognition.nominee = val;
-        showMessage("Please add a short reason for the nomination:", "bot");
-        showInput("Reason for nomination...", "handleManualReason");
-        currentStep = "recognitionNominationReason";
-      }
-
-      if (currentStep === "careerFreeTextGoals") {
-        context.career.freeText = val;
-        showMessage("Thanks! Would you be interested in exploring training programs related to your chosen field?", "bot");
-        showOptions(["Yes", "No"]);
-        currentStep = "careerQ3";
-      }
+    if (currentStep === "otherInquiryManual") {
+      context.inquiry = val;
+      showMessage("Thanks! Would you like HR to follow up with you?", "bot");
+      showOptions(["Yes", "No"]);
+      currentStep = "otherInquiryFollowup";
     }
-  }
 
-  function handleManualReason(event) {
-    if (event.key === "Enter") {
-      const val = event.target.value.trim();
-      if (!val) return;
-      showMessage(val, "user");
-      context.recognition.reason = val;
-      showMessage("Nomination submitted. HR will review it shortly.", "bot");
+    if (currentStep === "feedbackAnonymous" || currentStep === "feedbackNamed") {
+      context.feedback.text = val;
+      showMessage("Received. Your feedback will be shared with the HR engagement team.", "bot");
       exitFlow();
     }
-  }
 
-  // Main option handler
-  function handleOption(choice) {
-    showMessage(choice, "user");
-
-    // 1) Greeting Flow
-    if (currentStep === "greeting") {
-      context.topic = choice;
-      switch (choice) {
-        case "Employee engagement activities":
-          showMessage("Are you aware of the employee engagement programs we currently offer?", "bot");
-          showOptions(["Yes", "No"]);
-          currentStep = "engagementQ1";
-          break;
-        case "Employee feedback":
-          showMessage("Do you want to provide feedback as anonymous?", "bot");
-          showOptions(["Yes", "No"]);
-          currentStep = "feedbackQ1";
-          break;
-        case "Rewards & recognition":
-          showMessage("Do you feel your contributions are recognized at work?", "bot");
-          showOptions(["Yes", "No"]);
-          currentStep = "recognitionQ1";
-          break;
-        case "Career development":
-          showMessage("Are you satisfied with the career growth opportunities present here?", "bot");
-          showOptions(["Yes", "No"]);
-          currentStep = "careerQ1";
-          break;
-        case "Retention concerns":
-          showMessage("Are you presently satisfied with your work environment?", "bot");
-          showOptions(["Yes", "No"]);
-          currentStep = "retentionQ1";
-          break;
-        case "Other HR inquiries":
-          showMessage("Please describe your HR inquiry:", "bot");
-          showInput("Type your inquiry...", "handleManual");
-          currentStep = "otherInquiryManual";
-          break;
-      }
-      return;
+    if (currentStep === "recognitionNominationName") {
+      context.recognition.nominee = val;
+      showMessage("Please add a short reason for the nomination:", "bot");
+      showInput("Reason for nomination...", "handleManualReason");
+      currentStep = "recognitionNominationReason";
     }
 
-    // 2) Engagement Activities Flow
-    if (currentStep === "engagementQ1") {
-      if (choice === "Yes") {
-        showMessage("Recently, have you been involved in any engagement activities?", "bot");
-        showOptions(["Yes", "No"]);
-        currentStep = "engagementQ2";
-      } else {
-        showMessage("No worries! We have team-building events, wellbeing workshops, an employee sports day, and recognition ceremonies. Would you like to know about upcoming events or how to participate?", "bot");
-        showOptions(["Coming events", "How to participate"]);
-        currentStep = "engagementInfo";
-      }
-      return;
-    }
-
-    if (currentStep === "engagementInfo") {
-      context.engagement.infoChoice = choice;
-      if (choice === "Coming events") {
-        showMessage("Upcoming events: Team-Build Friday, Wellness Wednesday, Hackathon Weekend, Sports Day (Q2). Would you like to RSVP or see details?", "bot");
-        showOptions(["RSVP", "See details"]);
-      } else {
-        showMessage("To participate, check the HR portal → Engagement tab → Pick an event → Confirm attendance. Would you like me to send you a reminder?", "bot");
-        showOptions(["Yes, send reminder", "No, thanks"]);
-      }
-      exitFlow();
-      return;
-    }
-
-    if (currentStep === "engagementQ2") {
-      if (choice === "Yes") {
-        showMessage("In your opinion, did this activity enhance team connectedness and motivation?", "bot");
-        showOptions(["Yes", "None"]);
-        currentStep = "engagementQ3";
-      } else {
-        showMessage("That's fine; many employees skip due to workload. Do you want virtual, outdoor, or skill-based activities?", "bot");
-        showOptions(["Virtual", "Outdoor", "Skill-based"]);
-        currentStep = "engagementType";
-      }
-      return;
-    }
-
-    if (currentStep === "engagementType") {
-      context.engagement.preferredType = choice;
-      showMessage(`Got it. We'll recommend ${choice.toLowerCase()} activities aligned with schedules and interests.`, "bot");
-      exitFlow();
-      return;
-    }
-
-    if (currentStep === "engagementQ3") {
-      if (choice === "Yes") {
-        showMessage("Great to hear that! We're glad the program supported your engagement. Would you like to share additional feedback or get recommendations for upcoming events?", "bot");
-        showOptions(["Share feedback", "Get recommendations"]);
-        exitFlow();
-      } else {
-        showMessage("Thanks for your honesty! Would you like to share why it didn't meet your expectations?", "bot");
-        showOptions(["Poor coordination", "Not relevant to my interests", "Timing issues", "Prefer different types of activities"]);
-        currentStep = "engagementNegativeReasons";
-      }
-      return;
-    }
-
-    if (currentStep === "engagementNegativeReasons") {
-      context.engagement.issue = choice;
-      showMessage("Thanks. Your feedback helps us improve future programs.", "bot");
-      exitFlow();
-      return;
-    }
-
-    // 3) Employee Feedback Flow
-    if (currentStep === "feedbackQ1") {
-      if (choice === "Yes") {
-        context.feedback.anonymous = true;
-        showMessage("Your identity will not be recorded. Please type your feedback, and I'll send it to the HR engagement team.", "bot");
-        showInput("Type feedback...", "handleManual");
-        currentStep = "feedbackAnonymous";
-      } else {
-        context.feedback.anonymous = false;
-        showMessage("Great, I'll attach your name so HR can follow up. What feedback would you like to share?", "bot");
-        showInput("Type feedback...", "handleManual");
-        currentStep = "feedbackNamed";
-      }
-      return;
-    }
-
-    // 4) Rewards & Recognition Flow
-    if (currentStep === "recognitionQ1") {
-      if (choice === "Yes") {
-        showMessage("Great! Recognition goes a long way in motivating employees. Would you like to nominate a colleague for recognition?", "bot");
-        showOptions(["Yes", "No"]);
-        currentStep = "recognitionNominate";
-      } else {
-        showMessage("What kind of recognition would you prefer?", "bot");
-        showOptions(["Public recognition", "Monetary rewards", "Appreciation messages", "Career development opportunities"]);
-        currentStep = "recognitionPreference";
-      }
-      return;
-    }
-
-    if (currentStep === "recognitionNominate") {
-      if (choice === "Yes") {
-        showMessage("Please enter the colleague's name for nomination:", "bot");
-        showInput("Nominee full name...", "handleManual");
-        currentStep = "recognitionNominationName";
-      } else {
-        showMessage("No problem. You can nominate anytime from the HR portal → Recognition.", "bot");
-        exitFlow();
-      }
-      return;
-    }
-
-    if (currentStep === "recognitionPreference") {
-      context.recognition.preference = choice;
-      showMessage(`Thanks! We'll prioritize ${choice.toLowerCase()} initiatives in upcoming cycles.`, "bot");
-      exitFlow();
-      return;
-    }
-
-    // 5) Career Development Flow
-    if (currentStep === "careerQ1") {
-      if (choice === "Yes") {
-        showMessage("Great to hear! Would you like recommendations for either skill development programs or internal job openings?", "bot");
-        showOptions(["Skill development programs", "Internal job openings"]);
-        currentStep = "careerRecommendations";
-      } else {
-        showMessage("Which area do you want to develop more?", "bot");
-        showOptions(["Leadership", "Technical skills", "Communication", "Soft skills", "Cross-functional experience"]);
-        currentStep = "careerQ2";
-      }
-      return;
-    }
-
-    if (currentStep === "careerRecommendations") {
-      context.career.recommendationType = choice;
-      if (choice === "Skill development programs") {
-        showMessage("We’ll match you with relevant courses and workshops. Would you like me to tailor by skill level?", "bot");
-        showOptions(["Beginner", "Intermediate", "Advanced"]);
-        currentStep = "careerSkillLevel";
-      } else {
-        showMessage("Great. I'll share internal openings aligned with your profile.", "bot");
-        exitFlow();
-      }
-      return;
-    }
-
-    if (currentStep === "careerSkillLevel") {
-      context.career.skillLevel = choice;
-      showMessage(`Noted. We'll recommend ${choice.toLowerCase()} programs starting next cycle.`, "bot");
-      exitFlow();
-      return;
-    }
-
-    if (currentStep === "careerQ2") {
-      context.career.area = choice;
-      showMessage("Would you be interested in exploring training programs related to your chosen field?", "bot");
+    if (currentStep === "careerFreeTextGoals") {
+      context.career.freeText = val;
+      showMessage("Thanks! Would you be interested in exploring training programs related to your chosen field?", "bot");
       showOptions(["Yes", "No"]);
       currentStep = "careerQ3";
-      return;
-    }
-
-    if (currentStep === "careerQ3") {
-      if (choice === "Yes") {
-        showMessage("Sure, I'll list the available training sessions that match your development goals.", "bot");
-        showMessage("Example sessions: Leadership 101, Tech Deep Dive, Effective Communication Lab, Soft Skills Sprint.", "bot");
-        exitFlow();
-      } else {
-        showMessage("Alright; no problem! Whenever you change your mind, just let me know.", "bot");
-        exitFlow();
-      }
-      return;
-    }
-
-    // 6) Retention Concern Flow
-    if (currentStep === "retentionQ1") {
-      if (choice === "Yes") {
-        showMessage("Ah, glad to hear that! Positive work environments really build up engagement.", "bot");
-        exitFlow();
-      } else {
-        showMessage("What area causes dissatisfaction?", "bot");
-        showOptions(["Workload", "Work-life balance", "Salary & benefits", "Management support", "Career growth"]);
-        currentStep = "retentionQ2";
-      }
-      return;
-    }
-
-    if (currentStep === "retentionQ2") {
-      context.retention.concern = choice;
-      showMessage("Would you like HR to follow up with you?", "bot");
-      showOptions(["Yes", "No"]);
-      currentStep = "retentionQ3";
-      return;
-    }
-
-    if (currentStep === "retentionQ3") {
-      if (choice === "Yes") {
-        showMessage("Sure, I will forward your concern to HR, and they will respond confidentially.", "bot");
-      } else {
-        showMessage("Understood! I'm here any time you need to talk.", "bot");
-      }
-      exitFlow();
-      return;
-    }
-
-    // 7) Other HR inquiries follow-up
-    if (currentStep === "otherInquiryFollowup") {
-      if (choice === "Yes") {
-        showMessage("Okay, HR will review and follow up confidentially.", "bot");
-      } else {
-        showMessage("Alright. You can also check the HR portal for immediate references.", "bot");
-      }
-      exitFlow();
-      return;
-    }
-
-    // 8) Final Exit Flow with Rating
-    if (currentStep === "finalExit") {
-      if (choice === "Yes") {
-        showMessage("What would you like help with today?", "bot");
-        showOptions([
-          "Employee engagement activities",
-          "Employee feedback",
-          "Rewards & recognition",
-          "Career development",
-          "Retention concerns",
-          "Other HR inquiries"
-        ]);
-        currentStep = "greeting";
-      } else {
-        showMessage("Before you go, how would you rate this experience?", "bot");
-        showRating();
-        currentStep = "rating";
-      }
-      return;
-    }
-
-    // 9) Rating capture
-    if (currentStep === "rating") {
-      context.rating = choice; // choice will be the star string
-      showMessage(`Thanks for your ${choice} rating! Your feedback helps us improve.`, "bot");
-      document.getElementById("inputArea").innerHTML = "";
-      return;
     }
   }
+}
 
-  // Exit flow: ask to continue or end → then rating
-  function exitFlow() {
-    showMessage("Is there anything else I can help you with?", "bot");
-    showOptions(["Yes", "No"]);
-    currentStep = "finalExit";
+function handleManualReason(event) {
+  if (event.key === "Enter") {
+    const val = event.target.value.trim();
+    if (!val) return;
+    showMessage(val, "user");
+    context.recognition.reason = val;
+    showMessage("Nomination submitted. HR will review it shortly.", "bot");
+    exitFlow();
   }
+}
 
-  // Show rating UI
-  function showRating() {
-    const area = document.getElementById("inputArea");
-    area.innerHTML = "";
-    const ratingDiv = document.createElement("div");
-    ratingDiv.className = "rating";
-
-    const stars = ["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"];
-    stars.forEach(s => {
-      const btn = document.createElement("button");
-      btn.innerText = s;
-      btn.onclick = () => {
-        showMessage(s, "user");
-        currentStep = "rating";
-        handleOption(s);
-      };
-      ratingDiv.appendChild(btn);
-    });
-
-    area.appendChild(ratingDiv);
-  }
-</script>
-
-</body>
-</html>
+function showRating() {
+  if (ratingGiven) return;
+  const area = document.getElementById("inputArea");
+  area.innerHTML = "";
+  const ratingDiv = document.createElement("div");
+  ratingDiv.className = "rating";
+  const stars = ["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐",
