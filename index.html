@@ -6,38 +6,23 @@
   <title>Chatty – HR Engagement Assistant</title>
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <style>
-    :root {
-      --bg: #f0f4f8;
-      --card: #ffffff;
-      --bot: #e1ffc7;
-      --user: #dcf8c6;
-      --primary: #0077cc;
-      --primary-dark: #005fa3;
-      --text: #333;
-    }
-    body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 0; }
-    #welcome { text-align: center; padding: 50px 20px; }
-    #chatbox { display: none; max-width: 800px; margin: 20px auto; padding: 20px; background: var(--card); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-    .message { margin: 12px 0; padding: 12px 14px; border-radius: 18px; max-width: 80%; font-size: 15px; line-height: 1.5; }
-    .bot { background: var(--bot); color: var(--text); text-align: left; }
-    .user { background: var(--user); color: #000; text-align: right; margin-left: auto; }
-    .options { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-    .options button { padding: 10px 14px; border: none; background: var(--primary); color: white; border-radius: 6px; cursor: pointer; transition: background 0.2s; }
-    .options button:hover { background: var(--primary-dark); }
-    input[type="text"] { width: 100%; padding: 10px; margin-top: 12px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 15px; }
-    button#startBtn { padding: 12px 22px; font-size: 16px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; }
-    button#startBtn:hover { background: var(--primary-dark); }
-    .assistant-wrap { display: inline-block; position: relative; }
-    lottie-player { width: 220px; height: 220px; }
-    .assistant-bubble {
-      position: absolute; left: 50%; transform: translateX(-50%);
-      bottom: -16px; background: #fff; color: #333; border: 1px solid #ccc;
-      border-radius: 12px; padding: 8px 10px; font-size: 13px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      white-space: nowrap;
-    }
-    .rating { display: flex; gap: 6px; margin-top: 10px; }
-    .rating button { font-size: 18px; padding: 8px 10px; background: #ffd166; color: #333; border-radius: 6px; border: none; cursor: pointer; }
-    .rating button:hover { background: #f4a261; color: #fff; }
+    body { font-family: 'Segoe UI', Tahoma, sans-serif; background:#f0f4f8; margin:0; padding:0; }
+    #welcome { text-align:center; padding:50px 20px; }
+    #chatbox { display:none; max-width:800px; margin:20px auto; padding:20px; background:#fff; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.08); }
+    .message { margin:12px 0; padding:12px 14px; border-radius:18px; max-width:80%; font-size:15px; line-height:1.5; }
+    .bot { background:#e1ffc7; color:#333; text-align:left; }
+    .user { background:#dcf8c6; color:#000; text-align:right; margin-left:auto; }
+    .options { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+    .options button { padding:10px 14px; border:none; background:#0077cc; color:white; border-radius:6px; cursor:pointer; }
+    .options button:hover { background:#005fa3; }
+    input[type="text"] { width:100%; padding:10px; margin-top:12px; border-radius:6px; border:1px solid #cbd5e1; font-size:15px; }
+    button#startBtn { padding:12px 22px; font-size:16px; background:#0077cc; color:white; border:none; border-radius:8px; cursor:pointer; }
+    button#startBtn:hover { background:#005fa3; }
+    lottie-player { width:220px; height:220px; }
+    .assistant-bubble { position:absolute; left:50%; transform:translateX(-50%); bottom:-16px; background:#fff; border:1px solid #ccc; border-radius:12px; padding:8px 10px; font-size:13px; box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+    .rating { display:flex; gap:6px; margin-top:10px; }
+    .rating button { font-size:18px; padding:8px 10px; background:#ffd166; border:none; border-radius:6px; cursor:pointer; }
+    .rating button:hover { background:#f4a261; color:#fff; }
   </style>
 </head>
 <body>
@@ -58,8 +43,75 @@
 </div>
 
 <script>
-/* === Chatbot Flow Logic === */
+let currentStep = "askName";
+let ratingGiven = false;
+const context = { name:"", id:"", topic:null };
 
+function startChat(){
+  document.getElementById("welcome").style.display="none";
+  document.getElementById("chatbox").style.display="block";
+  showMessage("Welcome! Please enter your full name:","bot");
+  showInput("Your name...","handleName");
+}
+
+function showMessage(text,sender="bot"){
+  const msg=document.createElement("div");
+  msg.className=`message ${sender}`;
+  msg.innerText=text;
+  document.getElementById("messages").appendChild(msg);
+  msg.scrollIntoView({behavior:"smooth"});
+}
+
+function showOptions(options){
+  const area=document.getElementById("inputArea");
+  area.innerHTML="";
+  const container=document.createElement("div");
+  container.className="options";
+  options.forEach(opt=>{
+    const btn=document.createElement("button");
+    btn.innerText=opt;
+    btn.onclick=()=>handleOption(opt);
+    container.appendChild(btn);
+  });
+  area.appendChild(container);
+}
+
+function showInput(placeholder,handlerName){
+  const area=document.getElementById("inputArea");
+  area.innerHTML=`<input type="text" placeholder="${placeholder}" onkeydown="${handlerName}(event)" />`;
+}
+
+function handleName(event){
+  if(event.key==="Enter"){
+    const val=event.target.value.trim();
+    if(!val)return;
+    context.name=val;
+    showMessage(val,"user");
+    showMessage("Thanks, "+val+". Please enter your Employee ID:","bot");
+    showInput("Employee ID...","handleID");
+  }
+}
+
+function handleID(event){
+  if(event.key==="Enter"){
+    const val=event.target.value.trim();
+    if(!val)return;
+    context.id=val;
+    showMessage(val,"user");
+    showMessage("Hi "+context.name+"! I am your HR Engagement Assistant. What would you like help with today?","bot");
+    showOptions([
+      "Employee engagement activities",
+      "Employee feedback",
+      "Rewards & recognition",
+      "Career development",
+      "Retention concerns",
+      "Other HR inquiries"
+    ]);
+    currentStep="greeting";
+  }
+}
+
+/* === Chatbot Flow Logic === */
 function handleOption(choice){
   showMessage(choice,"user");
 
@@ -161,80 +213,15 @@ function handleOption(choice){
     } else { exitFlow(); }
   }
 
-  /* === Career Development Flow === */
-  else if(currentStep==="careerQ1"){
-    if(choice==="Yes"){
-      showMessage("Great to hear! Would you like recommendations for skill development programs or internal job openings?","bot");
-      showOptions(["Skill development","Job openings"]);
-      exitFlow();
-    } else {
-      showMessage("Which area do you want to develop more?","bot");
-      showOptions(["Leadership","Technical skills","Communication","Soft skills","Cross-functional experience"]);
-      currentStep="careerQ2";
-    }
-  }
-  else if(currentStep==="careerQ2"){
-    showMessage("Would you be interested in exploring training programs related to your chosen field?","bot");
-    showOptions(["Yes","No"]);
-    currentStep="careerQ3";
-  }
-  else if(currentStep==="careerQ3"){
-    if(choice==="Yes"){
-      showMessage("Sure, I'll list the available training sessions that match your goals.","bot");
-      exitFlow();
-    } else {
-      showMessage("Alright; no problem! Whenever you change your mind, just let me know.","bot");
-      exitFlow();
-    }
-  }
-
-  /* === Retention Flow === */
-  else if(currentStep==="retentionQ1"){
-    if(choice==="Yes"){
-      showMessage("Ah, glad to hear that! Positive work environments build engagement.","bot");
-      exitFlow();
-    } else {
-      showMessage("What area causes dissatisfaction?","bot");
-      showOptions(["Workload","Work-life balance","Salary & benefits","Management support","Career growth"]);
-      currentStep="retentionQ2";
-    }
-  }
-  else if(currentStep==="retentionQ2"){
-    showMessage("Would you like HR to follow up with you?","bot");
-    showOptions(["Yes","No"]);
-    currentStep="retentionQ3";
-  }
-  else if(currentStep==="retentionQ3"){
-    if(choice==="Yes"){
-      showMessage("Sure, I will forward your concern to HR, and they will respond confidentially.","bot");
-      exitFlow();
-    } else {
-      showMessage("Understood! I'm here any time you need to talk.","bot");
-      exitFlow();
-    }
-  }
-
-  /* === Final Exit === */
-  else if(currentStep==="finalExit"){
-    if(choice==="Yes"){
-      showMessage("Back to main menu: What would you like help with today?","bot");
-      showOptions(["Employee engagement activities","Employee feedback","Rewards & recognition","Career development","Retention concerns","Other HR inquiries"]);
-      currentStep="greeting";
-    } else {
-      showMessage("Thank you for chatting!","bot");
-      showRating();
-    }
-  }
+  /* === Final Exit Helper === */
 }
 
-/* === Exit Flow Helper === */
 function exitFlow(){
   showMessage("Is there anything else I can help you with?","bot");
   showOptions(["Yes","No"]);
   currentStep="finalExit";
 }
 
-/* === Rating System === */
 function showRating(){
   if(ratingGiven) return;
   const area=document.getElementById("inputArea");
@@ -249,7 +236,6 @@ function showRating(){
         showMessage(s,"user");
         showMessage("Thanks for your "+s+" rating!","bot");
         ratingGiven=true;
-        // Ask another question button
         const again=document.createElement("button");
         again.innerText="Ask another question";
         again.onclick=()=>{
@@ -266,3 +252,6 @@ function showRating(){
   });
   area.appendChild(ratingDiv);
 }
+</script>
+</body>
+</html>
