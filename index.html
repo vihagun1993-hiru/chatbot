@@ -58,105 +58,13 @@
 </div>
 
 <script>
-let currentStep = "askName";
-let ratingGiven = false;
-const context = { name:"", id:"", topic:null, engagement:{}, feedback:{}, recognition:{}, career:{}, retention:{}, inquiry:"", rating:null };
-
-function startChat() {
-  document.getElementById("welcome").style.display = "none";
-  document.getElementById("chatbox").style.display = "block";
-  showMessage("Welcome! Please enter your full name:", "bot");
-  showInput("Your name...", "handleName");
-}
-
-function showMessage(text, sender="bot") {
-  const msg = document.createElement("div");
-  msg.className = `message ${sender}`;
-  msg.innerText = text;
-  document.getElementById("messages").appendChild(msg);
-  msg.scrollIntoView({behavior:"smooth",block:"end"});
-}
-
-function showOptions(options) {
-  const area = document.getElementById("inputArea");
-  area.innerHTML = "";
-  const container = document.createElement("div");
-  container.className = "options";
-  options.forEach(opt=>{
-    const btn=document.createElement("button");
-    btn.innerText=opt;
-    btn.onclick=()=>handleOption(opt);
-    container.appendChild(btn);
-  });
-  area.appendChild(container);
-}
-
-function showInput(placeholder, handlerName) {
-  const area=document.getElementById("inputArea");
-  area.innerHTML=`<input type="text" placeholder="${placeholder}" onkeydown="${handlerName}(event)" />`;
-}
-
-function handleName(event){
-  if(event.key==="Enter"){
-    const val=event.target.value.trim();
-    if(!val)return;
-    context.name=val;
-    showMessage(val,"user");
-    showMessage("Thanks, "+val+". Please enter your Employee ID:","bot");
-    showInput("Employee ID...","handleID");
-  }
-}
-function handleID(event){
-  if(event.key==="Enter"){
-    const val=event.target.value.trim();
-    if(!val)return;
-    context.id=val;
-    showMessage(val,"user");
-    showMessage("Hi "+context.name+"! I am your HR Engagement Assistant. What would you like help with today?","bot");
-    showOptions(["Employee engagement activities","Employee feedback","Rewards & recognition","Career development","Retention concerns","Other HR inquiries","Leave policy","Training requests","Grievance reporting"]);
-    currentStep="greeting";
-  }
-}
-
-function handleManual(event){
-  if(event.key==="Enter"){
-    const val=event.target.value.trim();
-    if(!val)return;
-    showMessage(val,"user");
-    if(currentStep==="otherInquiryManual"){
-      context.inquiry=val;
-      showMessage("Thanks! Would you like HR to follow up with you?","bot");
-      showOptions(["Yes","No"]);
-      currentStep="otherInquiryFollowup";
-    }
-    if(currentStep==="feedbackAnonymous"||currentStep==="feedbackNamed"){
-      context.feedback.text=val;
-      showMessage("Received. Your feedback will be shared with HR.","bot");
-      exitFlow();
-    }
-    if(currentStep==="recognitionNominationName"){
-      context.recognition.nominee=val;
-      showMessage("Please add a short reason for the nomination:","bot");
-      showInput("Reason...","handleManualReason");
-      currentStep="recognitionNominationReason";
-    }
-  }
-}
-function handleManualReason(event){
-  if(event.key==="Enter"){
-    const val=event.target.value.trim();
-    if(!val)return;
-    showMessage(val,"user");
-    context.recognition.reason=val;
-    showMessage("Nomination submitted.","bot");
-    exitFlow();
-  }
-}
+/* === Chatbot Flow Logic === */
 
 function handleOption(choice){
   showMessage(choice,"user");
+
+  // Greeting menu
   if(currentStep==="greeting"){
-    context.topic=choice;
     switch(choice){
       case "Employee engagement activities":
         showMessage("Are you aware of the employee engagement programs we currently offer?","bot");
@@ -171,4 +79,190 @@ function handleOption(choice){
         showOptions(["Yes","No"]);
         currentStep="recognitionQ1"; break;
       case "Career development":
-        showMessage
+        showMessage("Are you satisfied with the career growth opportunities present here?","bot");
+        showOptions(["Yes","No"]);
+        currentStep="careerQ1"; break;
+      case "Retention concerns":
+        showMessage("Are you presently satisfied with your work environment?","bot");
+        showOptions(["Yes","No"]);
+        currentStep="retentionQ1"; break;
+      case "Other HR inquiries":
+        showMessage("Please describe your HR inquiry:","bot");
+        showInput("Type your inquiry...","handleManual");
+        currentStep="otherInquiryManual"; break;
+    }
+  }
+
+  /* === Engagement Flow === */
+  else if(currentStep==="engagementQ1"){
+    if(choice==="Yes"){
+      showMessage("Recently, have you been involved in any engagement activities?","bot");
+      showOptions(["Yes","No"]);
+      currentStep="engagementQ2";
+    } else {
+      showMessage("No worries! We have monthly team-building, wellbeing workshops, sports day, recognition ceremonies. Would you like to know about upcoming events or how to participate?","bot");
+      showOptions(["Coming events","How to participate"]);
+      exitFlow();
+    }
+  }
+  else if(currentStep==="engagementQ2"){
+    if(choice==="Yes"){
+      showMessage("Did this activity enhance team connectedness and motivation?","bot");
+      showOptions(["Yes","None"]);
+      currentStep="engagementQ3";
+    } else {
+      showMessage("That's fine; many skip due to workload. Do you want virtual, outdoor, or skill-based activities?","bot");
+      showOptions(["Virtual","Outdoor","Skill-based"]);
+      exitFlow();
+    }
+  }
+  else if(currentStep==="engagementQ3"){
+    if(choice==="Yes"){
+      showMessage("Great to hear! Would you like to share feedback or get recommendations for upcoming events?","bot");
+      showOptions(["Share feedback","Get recommendations"]);
+      exitFlow();
+    } else {
+      showMessage("Thanks for your honesty! Why didn't it meet expectations?","bot");
+      showOptions(["Poor coordination","Not relevant to my interests","Timing issues","Prefer different types"]);
+      exitFlow();
+    }
+  }
+
+  /* === Feedback Flow === */
+  else if(currentStep==="feedbackQ1"){
+    if(choice==="Yes"){
+      showMessage("Your identity will not be recorded. Please type your feedback:","bot");
+      showInput("Enter feedback...","handleManual");
+      currentStep="feedbackAnonymous";
+    } else {
+      showMessage("Great, I'll attach your name so HR can follow up. What feedback would you like to share?","bot");
+      showInput("Enter feedback...","handleManual");
+      currentStep="feedbackNamed";
+    }
+  }
+
+  /* === Recognition Flow === */
+  else if(currentStep==="recognitionQ1"){
+    if(choice==="Yes"){
+      showMessage("Great! Recognition motivates employees. Would you like to nominate a colleague?","bot");
+      showOptions(["Yes","No"]);
+      currentStep="recognitionNominate";
+    } else {
+      showMessage("What kind of recognition would you prefer?","bot");
+      showOptions(["Public recognition","Monetary rewards","Appreciation messages","Career development opportunities"]);
+      exitFlow();
+    }
+  }
+  else if(currentStep==="recognitionNominate"){
+    if(choice==="Yes"){
+      showMessage("Please enter the colleague's name:","bot");
+      showInput("Nominee name...","handleManual");
+      currentStep="recognitionNominationName";
+    } else { exitFlow(); }
+  }
+
+  /* === Career Development Flow === */
+  else if(currentStep==="careerQ1"){
+    if(choice==="Yes"){
+      showMessage("Great to hear! Would you like recommendations for skill development programs or internal job openings?","bot");
+      showOptions(["Skill development","Job openings"]);
+      exitFlow();
+    } else {
+      showMessage("Which area do you want to develop more?","bot");
+      showOptions(["Leadership","Technical skills","Communication","Soft skills","Cross-functional experience"]);
+      currentStep="careerQ2";
+    }
+  }
+  else if(currentStep==="careerQ2"){
+    showMessage("Would you be interested in exploring training programs related to your chosen field?","bot");
+    showOptions(["Yes","No"]);
+    currentStep="careerQ3";
+  }
+  else if(currentStep==="careerQ3"){
+    if(choice==="Yes"){
+      showMessage("Sure, I'll list the available training sessions that match your goals.","bot");
+      exitFlow();
+    } else {
+      showMessage("Alright; no problem! Whenever you change your mind, just let me know.","bot");
+      exitFlow();
+    }
+  }
+
+  /* === Retention Flow === */
+  else if(currentStep==="retentionQ1"){
+    if(choice==="Yes"){
+      showMessage("Ah, glad to hear that! Positive work environments build engagement.","bot");
+      exitFlow();
+    } else {
+      showMessage("What area causes dissatisfaction?","bot");
+      showOptions(["Workload","Work-life balance","Salary & benefits","Management support","Career growth"]);
+      currentStep="retentionQ2";
+    }
+  }
+  else if(currentStep==="retentionQ2"){
+    showMessage("Would you like HR to follow up with you?","bot");
+    showOptions(["Yes","No"]);
+    currentStep="retentionQ3";
+  }
+  else if(currentStep==="retentionQ3"){
+    if(choice==="Yes"){
+      showMessage("Sure, I will forward your concern to HR, and they will respond confidentially.","bot");
+      exitFlow();
+    } else {
+      showMessage("Understood! I'm here any time you need to talk.","bot");
+      exitFlow();
+    }
+  }
+
+  /* === Final Exit === */
+  else if(currentStep==="finalExit"){
+    if(choice==="Yes"){
+      showMessage("Back to main menu: What would you like help with today?","bot");
+      showOptions(["Employee engagement activities","Employee feedback","Rewards & recognition","Career development","Retention concerns","Other HR inquiries"]);
+      currentStep="greeting";
+    } else {
+      showMessage("Thank you for chatting!","bot");
+      showRating();
+    }
+  }
+}
+
+/* === Exit Flow Helper === */
+function exitFlow(){
+  showMessage("Is there anything else I can help you with?","bot");
+  showOptions(["Yes","No"]);
+  currentStep="finalExit";
+}
+
+/* === Rating System === */
+function showRating(){
+  if(ratingGiven) return;
+  const area=document.getElementById("inputArea");
+  area.innerHTML="";
+  const ratingDiv=document.createElement("div");
+  ratingDiv.className="rating";
+  ["⭐","⭐⭐","⭐⭐⭐","⭐⭐⭐⭐","⭐⭐⭐⭐⭐"].forEach(s=>{
+    const btn=document.createElement("button");
+    btn.innerText=s;
+    btn.onclick=()=>{
+      if(!ratingGiven){
+        showMessage(s,"user");
+        showMessage("Thanks for your "+s+" rating!","bot");
+        ratingGiven=true;
+        // Ask another question button
+        const again=document.createElement("button");
+        again.innerText="Ask another question";
+        again.onclick=()=>{
+          ratingGiven=false;
+          showMessage("What would you like help with today?","bot");
+          showOptions(["Employee engagement activities","Employee feedback","Rewards & recognition","Career development","Retention concerns","Other HR inquiries"]);
+          currentStep="greeting";
+        };
+        area.innerHTML="";
+        area.appendChild(again);
+      }
+    };
+    ratingDiv.appendChild(btn);
+  });
+  area.appendChild(ratingDiv);
+}
