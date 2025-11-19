@@ -27,7 +27,7 @@
     button#startBtn { padding: 12px 22px; font-size: 16px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; }
     button#startBtn:hover { background: var(--primary-dark); }
 
-    /* XP-style assistant panel */
+    /* XP-style animated assistant panel */
     .assistant-wrap { display: inline-block; position: relative; }
     .assistant-gif { width: 220px; height: auto; border-radius: 12px; box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
     .assistant-bubble {
@@ -37,17 +37,23 @@
       white-space: nowrap;
     }
     .brand { font-weight: 600; }
+
+    /* Rating styles */
+    .rating { display: flex; gap: 6px; margin-top: 10px; }
+    .rating button { font-size: 18px; padding: 8px 10px; background: #ffd166; color: #333; border-radius: 6px; border: none; cursor: pointer; }
+    .rating button:hover { background: #f4a261; color: #fff; }
   </style>
 </head>
 <body>
 
 <div id="welcome">
-  <!-- XP-style animated assistant: replace the src with your preferred cartoon GIF (magician/desk girl/XP-style) -->
+  <!-- XP-style animated assistant: replace the src with your preferred cartoon GIF (magician/desk assistant/XP-style) -->
   <div class="assistant-wrap">
     <img
       class="assistant-gif"
       src="https://media.tenor.com/3v2kLk9YQnIAAAAi/wizard-magic.gif"
       alt="Animated cartoon assistant asking 'Do you have any questions? Then let’s talk?'"
+      onerror="this.src='https://media.giphy.com/media/eKDrNwGq9W1E8/giphy.gif';"
     />
     <div class="assistant-bubble">Do you have any questions? Then let’s talk!</div>
   </div>
@@ -77,7 +83,8 @@
     recognition: {},
     career: {},
     retention: {},
-    inquiry: ""
+    inquiry: "",
+    rating: null
   };
 
   // UI helpers
@@ -373,7 +380,6 @@
     if (currentStep === "careerQ3") {
       if (choice === "Yes") {
         showMessage("Sure, I'll list the available training sessions that match your development goals.", "bot");
-        // Optional: show a few mock sessions
         showMessage("Example sessions: Leadership 101, Tech Deep Dive, Effective Communication Lab, Soft Skills Sprint.", "bot");
         exitFlow();
       } else {
@@ -424,48 +430,65 @@
       exitFlow();
       return;
     }
+
+    // 8) Final Exit Flow with Rating
+    if (currentStep === "finalExit") {
+      if (choice === "Yes") {
+        showMessage("What would you like help with today?", "bot");
+        showOptions([
+          "Employee engagement activities",
+          "Employee feedback",
+          "Rewards & recognition",
+          "Career development",
+          "Retention concerns",
+          "Other HR inquiries"
+        ]);
+        currentStep = "greeting";
+      } else {
+        showMessage("Before you go, how would you rate this experience?", "bot");
+        showRating();
+        currentStep = "rating";
+      }
+      return;
+    }
+
+    // 9) Rating capture
+    if (currentStep === "rating") {
+      context.rating = choice; // choice will be the star string
+      showMessage(`Thanks for your ${choice} rating! Your feedback helps us improve.`, "bot");
+      document.getElementById("inputArea").innerHTML = "";
+      return;
+    }
   }
 
-  // Exit flow: ask to continue or end
+  // Exit flow: ask to continue or end → then rating
   function exitFlow() {
     showMessage("Is there anything else I can help you with?", "bot");
     showOptions(["Yes", "No"]);
     currentStep = "finalExit";
   }
 
-  // Final exit handling
-  function handleExit(choice) {
-    // Not used; integrated in handleOption
-  }
+  // Show rating UI
+  function showRating() {
+    const area = document.getElementById("inputArea");
+    area.innerHTML = "";
+    const ratingDiv = document.createElement("div");
+    ratingDiv.className = "rating";
 
-  // Intercept finalExit inside handleOption
-  (function interceptFinalExit() {
-    const originalHandleOption = handleOption;
-    window.handleOption = function(choice) {
-      if (currentStep === "finalExit") {
-        showMessage(choice, "user");
-        if (choice === "Yes") {
-          // Show main menu again
-          showMessage("What would you like help with today?", "bot");
-          showOptions([
-            "Employee engagement activities",
-            "Employee feedback",
-            "Rewards & recognition",
-            "Career development",
-            "Retention concerns",
-            "Other HR inquiries"
-          ]);
-          currentStep = "greeting";
-        } else {
-          showMessage("Thank you for sharing your thoughts today! Have a wonderful day 😊", "bot");
-          document.getElementById("inputArea").innerHTML = "";
-        }
-        return;
-      }
-      // fall through to original
-      originalHandleOption(choice);
-    };
-  })();
+    const stars = ["⭐", "⭐⭐", "⭐⭐⭐", "⭐⭐⭐⭐", "⭐⭐⭐⭐⭐"];
+    stars.forEach(s => {
+      const btn = document.createElement("button");
+      btn.innerText = s;
+      btn.onclick = () => {
+        showMessage(s, "user");
+        currentStep = "rating";
+        handleOption(s);
+      };
+      ratingDiv.appendChild(btn);
+    });
+
+    area.appendChild(ratingDiv);
+  }
 </script>
 
 </body>
